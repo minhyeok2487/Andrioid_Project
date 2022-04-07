@@ -30,8 +30,11 @@ public class MemberInitActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        finish();
+        moveTaskToBack(true);
+        android.os.Process.killProcess(android.os.Process.myPid());
+        System.exit(1);
     }
+
 
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
@@ -85,6 +88,7 @@ public class MemberInitActivity extends AppCompatActivity {
     }
     private void myStartActivity(Class c) {
         Intent intent = new Intent(this, c);
-
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 }

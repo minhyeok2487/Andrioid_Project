@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,7 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-
+    TextView CurrentEmail, CurrentName, CurrentPhone;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +40,12 @@ public class MainActivity extends AppCompatActivity {
                         if(document != null){
                             if (document.exists()) {
                                 Log.d(TAG, "DocumentSnapshot data: " + document.getData());
+                                CurrentEmail = (TextView)findViewById(R.id.EmailText);
+                                CurrentEmail.setText("접속한 이메일 : "+FirebaseAuth.getInstance().getCurrentUser().getEmail());
+                                CurrentName = (TextView) findViewById(R.id.NameText);
+                                CurrentName.setText("접속한 이름 : " + document.getData().get("name"));
+                                CurrentPhone = (TextView) findViewById(R.id.PNumText);
+                                CurrentPhone.setText("접속한 이름 : " + document.getData().get("phoneNumber"));
                             } else {
                                 Log.d(TAG, "No such document");
                                 myStartActivity(MemberInitActivity.class);
