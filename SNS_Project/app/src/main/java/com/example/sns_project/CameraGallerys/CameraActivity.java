@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.sns_project;
+package com.example.sns_project.CameraGallerys;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -23,7 +23,11 @@ import android.media.ImageReader;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.sns_project.CameraGallerys.Camera2BasicFragment;
+import com.example.sns_project.R;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -82,6 +86,10 @@ public class CameraActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
+        // 액션바 제거
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
+
         if (null == savedInstanceState) {
             camera2BasicFragment = new Camera2BasicFragment();
             camera2BasicFragment.setOnImageAvailableListener(mOnImageAvailableListener);

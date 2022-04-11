@@ -1,4 +1,4 @@
-package com.example.sns_project;
+package com.example.sns_project.SignLogins;
 
 import android.Manifest;
 import android.app.Activity;
@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
@@ -20,6 +21,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.sns_project.CameraGallerys.CameraActivity;
+import com.example.sns_project.CameraGallerys.GalleryActivity;
+import com.example.sns_project.R;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -47,6 +51,10 @@ public class MemberInitActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_member_init);
+
+        // 액션바 제거
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
 
         profileImageVIew = findViewById(R.id.profileImageView);
         profileImageVIew.setOnClickListener(onClickListener);

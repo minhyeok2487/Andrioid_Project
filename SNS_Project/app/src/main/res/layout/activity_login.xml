@@ -61,11 +61,6 @@
             android:layout_height="wrap_content"
             android:text="비밀번호 재설정" />
 
-        <Button
-            android:id="@+id/GooglelogoutButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="구글 로그아웃" />
 
         <com.google.android.gms.common.SignInButton
             android:id="@+id/Google_sign_in_button"

@@ -1,4 +1,4 @@
-package com.example.sns_project;
+package com.example.sns_project.SignLogins;
 
 public class MemberInfo {
     private String name;

@@ -1,4 +1,4 @@
-package com.example.sns_project;
+package com.example.sns_project.CameraGallerys;
 
 import android.app.Activity;
 import android.database.Cursor;
@@ -6,10 +6,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.sns_project.R;
 
 import java.util.ArrayList;
 
@@ -22,6 +24,10 @@ public class GalleryActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
+
+        // 액션바 제거
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
 
         final int numberOfColumns = 3;
 

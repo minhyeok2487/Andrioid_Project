@@ -7,8 +7,12 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.sns_project.R;
+import com.example.sns_project.SignLogins.LoginActivity;
+import com.example.sns_project.SignLogins.MemberInitActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,39 +29,45 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // 액션바 제거
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
+
+        // 회원정보가 존재하는지 확인
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-        if(user == null){
-            myStartActivity(LoginActivity.class);
-        }else{
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            DocumentReference docRef = db.collection("users").document(user.getUid());
-            docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if(document != null){
-                            if (document.exists()) {
-                                Log.d(TAG, "DocumentSnapshot data: " + document.getData());
-                                CurrentEmail = (TextView)findViewById(R.id.EmailText);
-                                CurrentEmail.setText("접속한 이메일 : "+FirebaseAuth.getInstance().getCurrentUser().getEmail());
-                                CurrentName = (TextView) findViewById(R.id.NameText);
-                                CurrentName.setText("접속한 이름 : " + document.getData().get("name"));
-                                CurrentPhone = (TextView) findViewById(R.id.PNumText);
-                                CurrentPhone.setText("접속한 이름 : " + document.getData().get("phoneNumber"));
-                            } else {
-                                Log.d(TAG, "No such document");
-                                myStartActivity(MemberInitActivity.class);
-                            }
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference docRef = db.collection("users").document(user.getUid());
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if(document != null){
+                        if (document.exists()) {
+                            Log.d(TAG, "DocumentSnapshot data: " + document.getData());
+                            CurrentEmail = (TextView)findViewById(R.id.EmailText);
+                            CurrentEmail.setText("접속한 이메일 : "+FirebaseAuth.getInstance().getCurrentUser().getEmail());
+                            CurrentName = (TextView) findViewById(R.id.NameText);
+                            CurrentName.setText("접속한 이름 : " + document.getData().get("name"));
+                            CurrentPhone = (TextView) findViewById(R.id.PNumText);
+                            CurrentPhone.setText("접속한 이름 : " + document.getData().get("phoneNumber"));
+                        } else {
+                            Log.d(TAG, "No such document");
+                            finish();
+                            myStartActivity(MemberInitActivity.class);
                         }
-                    } else {
-                        Log.d(TAG, "get failed with ", task.getException());
                     }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
                 }
-            });
-        }
+            }
+        });
 
+
+
+
+
+        // 버튼 리스너
         findViewById(R.id.logoutButton).setOnClickListener(onClickListener);
     }
 
@@ -68,9 +78,6 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.logoutButton:
                     FirebaseAuth.getInstance().signOut();
                     myStartActivity(LoginActivity.class);
-                    break;
-                case R.id.CameraTest:
-                    myStartActivity(CameraActivity.class);
                     break;
             }
         }
