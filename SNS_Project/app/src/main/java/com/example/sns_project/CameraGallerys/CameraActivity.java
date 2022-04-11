@@ -26,6 +26,7 @@ import android.util.Log;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.sns_project.BasicActivity;
 import com.example.sns_project.CameraGallerys.Camera2BasicFragment;
 import com.example.sns_project.R;
 
@@ -34,7 +35,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class CameraActivity extends AppCompatActivity {
+public class CameraActivity extends BasicActivity {
 
     private Camera2BasicFragment camera2BasicFragment;
 

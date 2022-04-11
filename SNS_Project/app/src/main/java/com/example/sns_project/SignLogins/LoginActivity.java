@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.sns_project.BasicActivity;
 import com.example.sns_project.MainActivity;
 import com.example.sns_project.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -30,7 +31,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BasicActivity {
     private static final String TAG = "LoginActivity";
     private FirebaseAuth mAuth;
     GoogleSignInClient mGoogleSignInClient;

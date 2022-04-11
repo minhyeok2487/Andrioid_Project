@@ -21,6 +21,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.example.sns_project.BasicActivity;
 import com.example.sns_project.CameraGallerys.CameraActivity;
 import com.example.sns_project.CameraGallerys.GalleryActivity;
 import com.example.sns_project.R;
@@ -42,7 +44,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 
-public class MemberInitActivity extends AppCompatActivity {
+public class MemberInitActivity extends BasicActivity {
     private static final String TAG = "MemberInitActivity";
     private ImageView profileImageVIew;
     private String profilePath;
@@ -79,8 +81,7 @@ public class MemberInitActivity extends AppCompatActivity {
             case 0: {
                 if (resultCode == Activity.RESULT_OK) {
                     profilePath = data.getStringExtra("profilePath");
-                    Bitmap bmp = BitmapFactory.decodeFile(profilePath);
-                    profileImageVIew.setImageBitmap(bmp);
+                    Glide.with(this).load(profilePath).centerCrop().override(500).into(profileImageVIew);
                 }
                 break;
             }

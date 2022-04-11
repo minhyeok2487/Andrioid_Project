@@ -47,6 +47,10 @@
         </activity>
         <activity android:name=".CameraGallerys.GalleryActivity">
         </activity>
+        <activity android:name=".BasicActivity">
+        </activity>
+        <activity android:name=".Posts.WritePostActivity">
+        </activity>
     </application>
 
 </manifest>

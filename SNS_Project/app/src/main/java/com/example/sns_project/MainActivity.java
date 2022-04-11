@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.sns_project.Posts.WritePostActivity;
 import com.example.sns_project.R;
 import com.example.sns_project.SignLogins.LoginActivity;
 import com.example.sns_project.SignLogins.MemberInitActivity;
@@ -21,7 +22,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BasicActivity {
     private static final String TAG = "MainActivity";
     TextView CurrentEmail, CurrentName, CurrentPhone;
     @Override
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
         // 버튼 리스너
         findViewById(R.id.logoutButton).setOnClickListener(onClickListener);
+        findViewById(R.id.floatingActionButton).setOnClickListener(onClickListener);
     }
 
     View.OnClickListener onClickListener = new View.OnClickListener() {
@@ -79,6 +81,10 @@ public class MainActivity extends AppCompatActivity {
                     FirebaseAuth.getInstance().signOut();
                     myStartActivity(LoginActivity.class);
                     break;
+                case R.id.floatingActionButton:
+                    myStartActivity(WritePostActivity.class);
+                    break;
+
             }
         }
     };

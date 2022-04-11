@@ -11,11 +11,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.sns_project.BasicActivity;
 import com.example.sns_project.R;
 
 import java.util.ArrayList;
 
-public class GalleryActivity extends AppCompatActivity {
+public class GalleryActivity extends BasicActivity {
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
 

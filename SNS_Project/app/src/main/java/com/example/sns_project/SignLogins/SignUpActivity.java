@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.sns_project.BasicActivity;
 import com.example.sns_project.R;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -18,7 +19,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class SignUpActivity extends AppCompatActivity {
+public class SignUpActivity extends BasicActivity {
     private static final String TAG = "SignUpActivity";
     private FirebaseAuth mAuth;
     GoogleSignInClient mGoogleSignInClient;

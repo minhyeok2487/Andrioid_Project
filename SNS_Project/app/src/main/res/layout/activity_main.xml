@@ -41,4 +41,11 @@
         android:layout_height="wrap_content"
         android:text="로그아웃" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButton"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        app:srcCompat="@drawable/ic_baseline_add_box_24" />
+
 </LinearLayout>
