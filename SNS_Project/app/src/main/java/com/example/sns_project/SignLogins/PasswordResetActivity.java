@@ -6,6 +6,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.sns_project.BasicActivity;
@@ -21,10 +22,6 @@ public class PasswordResetActivity extends BasicActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_password_reset);
-
-        // 액션바 제거
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
 
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
@@ -47,10 +44,13 @@ public class PasswordResetActivity extends BasicActivity {
         String email = ((EditText)findViewById(R.id.emailEditText)).getText().toString();
 
         if(email.length() > 0){
+            final RelativeLayout loaderLayout = findViewById(R.id.loaderLayout);
+            loaderLayout.setVisibility(View.VISIBLE);
             mAuth.sendPasswordResetEmail(email)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
+                            loaderLayout.setVisibility(View.GONE);
                             if (task.isSuccessful()) {
                                 startToast("이메일을 보냈습니다.");
                             }

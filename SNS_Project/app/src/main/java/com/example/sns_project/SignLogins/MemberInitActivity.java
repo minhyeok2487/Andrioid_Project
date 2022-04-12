@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -49,18 +50,16 @@ public class MemberInitActivity extends BasicActivity {
     private ImageView profileImageVIew;
     private String profilePath;
     private FirebaseUser user;
+    private RelativeLayout loaderLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_member_init);
 
-        // 액션바 제거
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
-
         profileImageVIew = findViewById(R.id.profileImageView);
         profileImageVIew.setOnClickListener(onClickListener);
 
+        loaderLayout = findViewById(R.id.loaderLayout);
         findViewById(R.id.checkButton).setOnClickListener(onClickListener);
         findViewById(R.id.picture).setOnClickListener(onClickListener);
         findViewById(R.id.gallery).setOnClickListener(onClickListener);
@@ -115,12 +114,11 @@ public class MemberInitActivity extends BasicActivity {
                                 1);
                         if (ActivityCompat.shouldShowRequestPermissionRationale(MemberInitActivity.this,
                                 Manifest.permission.READ_EXTERNAL_STORAGE)) {
-
                         } else {
                             startToast("권한을 허용해 주세요");
                         }
                     }else{
-                        myStartActivity(GalleryActivity.class);
+                        myStartGalleryActivity(GalleryActivity.class, "image", 0);
                     }
                     break;
 
@@ -150,6 +148,7 @@ public class MemberInitActivity extends BasicActivity {
         final String address = ((EditText) findViewById(R.id.addressEditText)).getText().toString();
 
         if (name.length() > 0 && phoneNumber.length() > 9 && birthDay.length() > 5 && address.length() > 0) {
+            loaderLayout.setVisibility(View.VISIBLE);
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
             user = FirebaseAuth.getInstance().getCurrentUser();
@@ -190,7 +189,7 @@ public class MemberInitActivity extends BasicActivity {
             startToast("회원정보를 입력해주세요.");
         }
     }
-    //
+
     private void uploader(MemberInfo memberInfo){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("users").document(user.getUid()).set(memberInfo)
@@ -198,6 +197,7 @@ public class MemberInitActivity extends BasicActivity {
                     @Override
                     public void onSuccess(Void aVoid) {
                         startToast("회원정보 등록을 성공하였습니다.");
+                        loaderLayout.setVisibility(View.GONE);
                         finish();
                     }
                 })
@@ -205,6 +205,7 @@ public class MemberInitActivity extends BasicActivity {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         startToast("회원정보 등록에 실패하였습니다.");
+                        loaderLayout.setVisibility(View.GONE);
                         Log.w(TAG, "Error writing document", e);
                     }
                 });
@@ -218,5 +219,11 @@ public class MemberInitActivity extends BasicActivity {
     private void myStartActivity(Class c) {
         Intent intent = new Intent(this, c);
         startActivityForResult(intent, 0);
+    }
+
+    private void myStartGalleryActivity(Class c, String media, int requestCode) {
+        Intent intent = new Intent(this, c);
+        intent.putExtra("media", media);
+        startActivityForResult(intent, requestCode);
     }
 }

@@ -3,6 +3,7 @@ package com.example.sns_project.SignLogins;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.sns_project.BasicActivity;
@@ -36,21 +38,18 @@ public class LoginActivity extends BasicActivity {
     private FirebaseAuth mAuth;
     GoogleSignInClient mGoogleSignInClient;
     private final int RC_SIGN_IN = 123;
-
+    private RelativeLayout loaderLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // 액션바 제거
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
-        
+
         // 이미 로그인 되어있는지 확인
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if(user == null){
+        if (user == null) {
             // 로그인 되어있지 않다면 그대로 로그인 화면이 나타남
-        }else{// 로그인 되어있다면 회원정보 DB를 가져옴
+        } else {// 로그인 되어있다면 회원정보 DB를 가져옴
             FirebaseFirestore db = FirebaseFirestore.getInstance();
             DocumentReference docRef = db.collection("users").document(user.getUid());
             docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -58,7 +57,7 @@ public class LoginActivity extends BasicActivity {
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if (task.isSuccessful()) {
                         DocumentSnapshot document = task.getResult();
-                        if(document != null){
+                        if (document != null) {
                             if (document.exists()) {
                                 // 회원정보 DB까지 있다면 메인화면 실행
                                 myStartActivity(MainActivity.class);
@@ -84,6 +83,7 @@ public class LoginActivity extends BasicActivity {
         mAuth = FirebaseAuth.getInstance();
 
 
+        loaderLayout = findViewById(R.id.loaderLayout);
         // 버튼 리스너
         findViewById(R.id.gotoSignupButton).setOnClickListener(onClickListener);
         findViewById(R.id.LoginButton).setOnClickListener(onClickListener);
@@ -94,7 +94,7 @@ public class LoginActivity extends BasicActivity {
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            switch (v.getId()){
+            switch (v.getId()) {
                 case R.id.gotoSignupButton:
                     myStartActivity(SignUpActivity.class);
                     break;
@@ -111,7 +111,7 @@ public class LoginActivity extends BasicActivity {
         }
     };
 
-    
+
     // 뒤로가기 버튼 누르면 앱을 완전히 종료
     @Override
     public void onBackPressed() {
@@ -123,64 +123,44 @@ public class LoginActivity extends BasicActivity {
 
     // 로그인 메서드
     private void login() {
-        String email = ((EditText)findViewById(R.id.emailText)).getText().toString();
-        String password = ((EditText)findViewById(R.id.passwordEditText)).getText().toString();
+        String email = ((EditText) findViewById(R.id.emailText)).getText().toString();
+        String password = ((EditText) findViewById(R.id.passwordEditText)).getText().toString();
 
-        if(email.length() > 0 && password.length() > 0){
+        if (email.length() > 0 && password.length() > 0) {
+            loaderLayout.setVisibility(View.VISIBLE);
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
                                 // 로그인 성공시 메인 액티비티 실행
+                                loaderLayout.setVisibility(View.GONE);
                                 FirebaseUser user = mAuth.getCurrentUser();
-                                startToast("로그인에 성공하였습니다.");
-                                finish();
-                                myStartActivity(MainActivity.class);
+                                if(user.isEmailVerified()){
+                                    startToast("로그인에 성공하였습니다.");
+                                    finish();
+                                    myStartActivity(MainActivity.class);
+                                } else{
+                                    startToast("이메일 인증 실패");
+                                }
+
                             } else {
-                                if(task.getException() != null){
+                                if (task.getException() != null) {
                                     startToast(task.getException().toString());
                                 }
                             }
                         }
                     });
-        }else {
+        } else {
             startToast("이메일 또는 비밀번호를 입력해 주세요.");
         }
     }
 
     // 구글 회원가입,로그인 메서드
     private void signIn() {
+        loaderLayout.setVisibility(View.VISIBLE);
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
-    }
-
-    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
-        try {
-            GoogleSignInAccount acct = completedTask.getResult(ApiException.class);
-
-            if (acct != null) {
-                String personName = acct.getDisplayName();
-                String personGivenName = acct.getGivenName();
-                String personFamilyName = acct.getFamilyName();
-                String personEmail = acct.getEmail();
-                String personId = acct.getId();
-                Uri personPhoto = acct.getPhotoUrl();
-
-                Log.d(TAG, "handleSignInResult:personName "+personName);
-                Log.d(TAG, "handleSignInResult:personGivenName "+personGivenName);
-                Log.d(TAG, "handleSignInResult:personEmail "+personEmail);
-                Log.d(TAG, "handleSignInResult:personId "+personId);
-                Log.d(TAG, "handleSignInResult:personFamilyName "+personFamilyName);
-                Log.d(TAG, "handleSignInResult:personPhoto "+personPhoto);
-            }
-
-        } catch (ApiException e) {
-            // The ApiException status code indicates the detailed failure reason.
-            // Please refer to the GoogleSignInStatusCodes class reference for more information.
-            Log.e(TAG, "signInResult:failed code=" + e.getStatusCode());
-
-        }
     }
 
     @Override
@@ -205,13 +185,13 @@ public class LoginActivity extends BasicActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
+                            loaderLayout.setVisibility(View.GONE);
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
                             finish();
                             myStartActivity(MainActivity.class);
                         } else {
-                            // If sign in fails, display a message to the user.
+                            loaderLayout.setVisibility(View.GONE);
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
                         }
                     }

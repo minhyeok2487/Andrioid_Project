@@ -2,12 +2,14 @@ package com.example.sns_project.SignLogins;
 
 import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.sns_project.BasicActivity;
@@ -29,11 +31,6 @@ public class SignUpActivity extends BasicActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
-
-        // 액션바 제거
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
-
         mAuth = FirebaseAuth.getInstance();
 
         findViewById(R.id.signUpButton).setOnClickListener(onClickListener);
@@ -42,7 +39,7 @@ public class SignUpActivity extends BasicActivity {
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            switch (v.getId()){
+            switch (v.getId()) {
                 case R.id.signUpButton:
                     signUp();
                     break;
@@ -51,35 +48,46 @@ public class SignUpActivity extends BasicActivity {
     };
 
     private void signUp() {
-        String email = ((EditText)findViewById(R.id.emailText)).getText().toString();
-        String password = ((EditText)findViewById(R.id.LoginpasswordEditText)).getText().toString();
-        String passwordCheck = ((EditText)findViewById(R.id.passwordCheckEditText)).getText().toString();
+        String email = ((EditText) findViewById(R.id.emailText)).getText().toString();
+        String password = ((EditText) findViewById(R.id.LoginpasswordEditText)).getText().toString();
+        String passwordCheck = ((EditText) findViewById(R.id.passwordCheckEditText)).getText().toString();
 
-        if(email.length() > 0 && password.length() > 0 && passwordCheck.length() > 0){
-            if(password.equals(passwordCheck)){
+        if (email.length() > 0 && password.length() > 0 && passwordCheck.length() > 0) {
+            if (password.equals(passwordCheck)) {
+
+                final RelativeLayout loaderLayout = findViewById(R.id.loaderLayout);
+                loaderLayout.setVisibility(View.VISIBLE);
                 mAuth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
+                                    loaderLayout.setVisibility(View.GONE);
                                     FirebaseUser user = mAuth.getCurrentUser();
+                                    user.sendEmailVerification()
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    startToast("메일 발송 완료");
+                                                }
+                                            });
                                     finish();
                                     myStartActivity(MemberInitActivity.class);
                                 } else {
-                                    if(task.getException() != null){
+                                    loaderLayout.setVisibility(View.GONE);
+                                    if (task.getException() != null) {
                                         startToast(task.getException().toString());
                                     }
                                 }
                             }
                         });
-            }else{
+            } else {
                 startToast("비밀번호가 일치하지 않습니다.");
             }
-        }else {
+        } else {
             startToast("이메일 또는 비밀번호를 입력해 주세요.");
         }
     }
-
 
 
     private void startToast(String msg) {

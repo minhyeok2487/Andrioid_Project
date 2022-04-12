@@ -9,7 +9,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.sns_project.CameraGallerys.GalleryAdapter;
+import com.example.sns_project.Posts.PostInfo;
 import com.example.sns_project.Posts.WritePostActivity;
 import com.example.sns_project.R;
 import com.example.sns_project.SignLogins.LoginActivity;
@@ -21,6 +26,11 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
+import java.util.Date;
 
 public class MainActivity extends BasicActivity {
     private static final String TAG = "MainActivity";
@@ -29,10 +39,6 @@ public class MainActivity extends BasicActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // 액션바 제거
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
 
         // 회원정보가 존재하는지 확인
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -64,7 +70,32 @@ public class MainActivity extends BasicActivity {
             }
         });
 
+        db.collection("posts")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            ArrayList<PostInfo> postList = new ArrayList<>();
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d(TAG, document.getId() + " => " + document.getData());
+                                postList.add(new PostInfo(
+                                        document.getData().get("title").toString(),
+                                        (ArrayList<String>) document.getData().get("contents"),
+                                        document.getData().get("publisher").toString(),
+                                        new Date(document.getDate("createdAt").getTime())));
+                            }
+                            RecyclerView recyclerView = findViewById(R.id.recyclerView);
+                            recyclerView.setHasFixedSize(true);
+                            recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
 
+                            RecyclerView.Adapter mAdapter = new MainAdapter(MainActivity.this, postList);
+                            recyclerView.setAdapter(mAdapter);
+                        } else {
+                            Log.d(TAG, "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
 
 
 

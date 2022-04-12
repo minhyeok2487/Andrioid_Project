@@ -48,4 +48,9 @@
         android:clickable="true"
         app:srcCompat="@drawable/ic_baseline_add_box_24" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
 </LinearLayout>
