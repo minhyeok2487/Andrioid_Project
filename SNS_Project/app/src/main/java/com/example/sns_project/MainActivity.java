@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +30,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Exclude;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
@@ -46,9 +48,9 @@ import java.util.Map;
 
 public class MainActivity extends BasicActivity {
     private static final String TAG = "MainActivity";
-    TextView CurrentEmail, CurrentName, CurrentPhone;
-    TextView notificationText;
+    private static TextView CurrentEmail, CurrentName, CurrentPhone, childTextview;
     private static DatabaseReference mDatabase;
+    private static String ChildName, ChildEmail;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +74,21 @@ public class MainActivity extends BasicActivity {
                             CurrentName.setText("접속한 이름 : " + document.getData().get("name"));
                             CurrentPhone = (TextView) findViewById(R.id.PNumText);
                             CurrentPhone.setText("접속한 이름 : " + document.getData().get("phoneNumber"));
+                            mDatabase = FirebaseDatabase.getInstance().getReference();
+                            mDatabase.child("users").child(user.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DataSnapshot> task) {
+                                    if (!task.isSuccessful()) {
+                                        Log.e("firebase", "Error getting data", task.getException());
+                                    }
+                                    else {
+                                        Log.d("firebase", String.valueOf(task.getResult().getValue()));
+                                        childTextview = (TextView)findViewById(R.id.childTextview);
+                                        childTextview.setText(String.valueOf(task.getResult().getValue()));
+                                    }
+                                }
+                            });
+
                         } else {
                             Log.d(TAG, "No such document");
                             finish();
@@ -84,6 +101,7 @@ public class MainActivity extends BasicActivity {
             }
         });
 
+        //게시글 화면에 보여주기
         db.collection("posts")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -112,19 +130,119 @@ public class MainActivity extends BasicActivity {
                     }
                 });
 
+
+        // 버튼 리스너
+        findViewById(R.id.logoutButton).setOnClickListener(onClickListener);
+        findViewById(R.id.floatingActionButton).setOnClickListener(onClickListener);
+        findViewById(R.id.SendSignalButton).setOnClickListener(onClickListener);
+    }
+
+    View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.logoutButton:
+                    FirebaseAuth.getInstance().signOut();
+                    myStartActivity(LoginActivity.class);
+                    break;
+                case R.id.floatingActionButton:
+                    myStartActivity(WritePostActivity.class);
+                    break;
+                case R.id.SendSignalButton:
+                    //데이터 보내고 받기
+                    EditText ParentId = (EditText)findViewById(R.id.ParentId);
+                    SendData(ParentId.getText().toString());
+                    break;
+
+            }
+        }
+    };
+
+
+    private void myStartActivity(Class c) {
+        Intent intent = new Intent(this, c);
+        startActivity(intent);
+    }
+
+
+    public class User {
+        String name;
+        String email;
+        String message;
+        Date date;
+
+        public User(String name, String email, String message, Date date) {
+            this.name = name;
+            this.email = email;
+            this.message = message;
+            this.date = date;
+        }
+
+        public String getMessage(){
+            return message;
+        }
+        public Date getDate(){return date;}
+    }
+    public void writeNewUser(String userId, String name, String email, String message) {
+        User user = new User(name, email, message, new Date());
+
+        mDatabase.child("users").child(userId).child(name).child(user.getDate().toString()).setValue(message);
+    }
+
+    private void SendData(String ParrentId){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference docRefParrent = db.collection("users").document(ParrentId);
+        DocumentReference docRefChild = db.collection("users").document(user.getUid());
+
+        docRefChild.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if(document != null){
+                        if (document.exists()) {
+                            ChildName = (String) document.getData().get("name");
+                            ChildEmail = user.getEmail();
+                        } else {
+                            Log.d(TAG, "No such document");
+                        }
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
+
+        docRefParrent.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if(document != null){
+                        if (document.exists()) {
+                            Log.d("부모 이름",document.getData().get("name").toString());
+                            Log.d("부모 번호",document.getData().get("phoneNumber").toString());
+                            writeNewUser(ParrentId,ChildName,ChildEmail,"테스트메세지입니다1");
+
+                        } else {
+                            Log.d(TAG, "No such document");
+                        }
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
+
+    }
+
+    private void RealtimeData(String userId,String name, String email){
         // 파이어베이스 실시간 데이터 다루기
-        // [START write_message]
-        // Write a message to the database
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("message");
+        //FirebaseDatabase database = FirebaseDatabase.getInstance();
+        //DatabaseReference myRef = database.getReference("message");
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        writeNewUser(user.getUid().toString(), "몰라1", user.getEmail(), "Hello1");
-
-        // [END write_message]
-        // [START read_message]
-        // Read from the database
-
-        mDatabase.child("users").child(user.getUid().toString()).addValueEventListener(new ValueEventListener() {
+        mDatabase.child("users").child(userId).child(name).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
@@ -140,62 +258,6 @@ public class MainActivity extends BasicActivity {
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
-
-
-        // [END read_message]
-
-
-
-
-        // 버튼 리스너
-        findViewById(R.id.logoutButton).setOnClickListener(onClickListener);
-        findViewById(R.id.floatingActionButton).setOnClickListener(onClickListener);
-    }
-
-    View.OnClickListener onClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()){
-                case R.id.logoutButton:
-                    FirebaseAuth.getInstance().signOut();
-                    myStartActivity(LoginActivity.class);
-                    break;
-                case R.id.floatingActionButton:
-                    myStartActivity(WritePostActivity.class);
-                    break;
-
-            }
-        }
-    };
-
-
-    private void myStartActivity(Class c) {
-        Intent intent = new Intent(this, c);
-        startActivity(intent);
-    }
-
-
-    public class User {
-        public String name;
-        public String email;
-        public String message;
-
-
-        public User(String name, String email, String message) {
-            this.name = name;
-            this.email = email;
-            this.message = message;
-        }
-        public User(){ }
-
-        public String getMessage(){
-            return message;
-        }
-    }
-    public void writeNewUser(String userId, String name, String email, String message) {
-        User user = new User(name, email, message);
-
-        mDatabase.child("users").child(userId).setValue(user);
     }
 
 }

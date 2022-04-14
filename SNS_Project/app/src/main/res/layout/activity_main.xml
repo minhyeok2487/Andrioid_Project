@@ -35,11 +35,25 @@
         android:layout_height="wrap_content"
         android:text="접속한 전화번호 : " />
 
-    <TextView
-        android:id="@+id/notificationText"
+    <EditText
+        android:id="@+id/ParentId"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:ems="10"
+        android:hint="아이디입력"
+        android:inputType="textPersonName" />
+
+    <Button
+        android:id="@+id/SendSignalButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SendSignal" />
+
+    <TextView
+        android:id="@+id/childTextview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="보일거임" />
 
     <Button
         android:id="@+id/logoutButton"
