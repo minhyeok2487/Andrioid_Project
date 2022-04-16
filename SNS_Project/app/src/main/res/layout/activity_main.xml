@@ -49,6 +49,33 @@
         android:layout_height="wrap_content"
         android:text="SendSignal" />
 
+    <Button
+        android:id="@+id/SendtoParent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="부모에게 정보보내기" />
+
+    <LinearLayout
+        android:id="@+id/ButtonLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/Startbutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="start" />
+
+        <Button
+            android:id="@+id/Stopbutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="stop" />
+
+
+    </LinearLayout>
+
     <TextView
         android:id="@+id/childTextview"
         android:layout_width="match_parent"

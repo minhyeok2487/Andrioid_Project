@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.sns_project">
+
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    //네트워크를 이용하여 단말기 위치 식별
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    // GPS와 네트워크를 이용하여 단말기 위치 식별
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    //백그라운 위치 권한
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    //위치정보 확인함
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    //코스_로케이션_액세스_(Cell-ID/WiFi)
 
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -17,6 +29,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SNS_Project">
+        <service
+            android:name=".LocationService"
+            android:enabled="true"
+            android:exported="false" />
         <activity
             android:name=".SignLogins.LoginActivity"
             android:exported="true">
