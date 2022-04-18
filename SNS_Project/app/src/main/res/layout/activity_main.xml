@@ -50,10 +50,10 @@
         android:text="SendSignal" />
 
     <Button
-        android:id="@+id/SendtoParent"
+        android:id="@+id/CheckAuthority"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="부모에게 정보보내기" />
+        android:text="역할 확인" />
 
     <LinearLayout
         android:id="@+id/ButtonLayout"
@@ -75,6 +75,7 @@
 
 
     </LinearLayout>
+
 
     <TextView
         android:id="@+id/childTextview"

@@ -68,15 +68,10 @@ public class MainActivity extends BasicActivity {
     Button Startbutton;
     Button Stopbutton;
 
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
 
 
         // 회원정보가 존재하는지 확인
@@ -158,7 +153,7 @@ public class MainActivity extends BasicActivity {
         findViewById(R.id.logoutButton).setOnClickListener(onClickListener);
         findViewById(R.id.floatingActionButton).setOnClickListener(onClickListener);
         findViewById(R.id.SendSignalButton).setOnClickListener(onClickListener);
-        findViewById(R.id.SendtoParent).setOnClickListener(onClickListener);
+        findViewById(R.id.CheckAuthority).setOnClickListener(onClickListener);
 
         //자식 아이디 일때만 버튼 보이기
         if(user.getUid().equals("be8dflcIjBg0e88Jg7JtkPd1z693")){
@@ -206,9 +201,8 @@ public class MainActivity extends BasicActivity {
                     EditText ParentId = (EditText)findViewById(R.id.ParentId);
                     SendData(ParentId.getText().toString());
                     break;
-                case R.id.SendtoParent:
-                    //데이터 보내고 받기
-                    SendData("be8dflcIjBg0e88Jg7JtkPd1z693");
+                case R.id.CheckAuthority:
+                    myStartActivity(CheckAuthorityActivity.class);
                     break;
             }
         }

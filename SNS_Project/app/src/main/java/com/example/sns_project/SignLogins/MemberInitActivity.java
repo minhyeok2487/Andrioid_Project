@@ -34,7 +34,13 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -155,7 +161,7 @@ public class MemberInitActivity extends BasicActivity {
             final StorageReference mountainImagesRef = storageRef.child("users/" + user.getUid() + "/profileImage.jpg");
 
             if(profilePath == null){
-                MemberInfo memberInfo = new MemberInfo(name, phoneNumber, birthDay, address);
+                MemberInfo memberInfo = new MemberInfo(user.getEmail(),name, phoneNumber, birthDay, address);
                 uploader(memberInfo);
             }else{
                 try {
@@ -174,7 +180,7 @@ public class MemberInitActivity extends BasicActivity {
                         public void onComplete(@NonNull Task<Uri> task) {
                             if (task.isSuccessful()) {
                                 Uri downloadUri = task.getResult();
-                                MemberInfo memberInfo = new MemberInfo(name, phoneNumber, birthDay, address, downloadUri.toString());
+                                MemberInfo memberInfo = new MemberInfo(user.getEmail(),name, phoneNumber, birthDay, address, downloadUri.toString());
                                 uploader(memberInfo);
                             } else {
                                 startToast("회원정보를 보내는데 실패하였습니다.");
@@ -196,6 +202,7 @@ public class MemberInitActivity extends BasicActivity {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        SendData();
                         startToast("회원정보 등록을 성공하였습니다.");
                         loaderLayout.setVisibility(View.GONE);
                         finish();
@@ -209,6 +216,30 @@ public class MemberInitActivity extends BasicActivity {
                         Log.w(TAG, "Error writing document", e);
                     }
                 });
+    }
+
+    private void SendData(){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
+        DocumentReference docRef = db.collection("users").document(user.getUid());
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if(document != null){
+                        if (document.exists()) {
+                            mDatabase.child("Authority").child(document.getData().get("name").toString()).setValue("권한 없음");
+                        } else {
+                            Log.d("데이터", "No such document");
+                        }
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
     }
 
 
