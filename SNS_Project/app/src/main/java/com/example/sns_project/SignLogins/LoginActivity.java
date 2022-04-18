@@ -51,7 +51,7 @@ public class LoginActivity extends BasicActivity {
             // 로그인 되어있지 않다면 그대로 로그인 화면이 나타남
         } else {// 로그인 되어있다면 회원정보 DB를 가져옴
             FirebaseFirestore db = FirebaseFirestore.getInstance();
-            DocumentReference docRef = db.collection("users").document(user.getUid());
+            DocumentReference docRef = db.collection("Users").document(user.getUid());
             docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {

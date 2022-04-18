@@ -158,10 +158,10 @@ public class MemberInitActivity extends BasicActivity {
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
             user = FirebaseAuth.getInstance().getCurrentUser();
-            final StorageReference mountainImagesRef = storageRef.child("users/" + user.getUid() + "/profileImage.jpg");
+            final StorageReference mountainImagesRef = storageRef.child("Users/" + user.getUid() + "/profileImage.jpg");
 
             if(profilePath == null){
-                MemberInfo memberInfo = new MemberInfo(user.getEmail(),name, phoneNumber, birthDay, address);
+                MemberInfo memberInfo = new MemberInfo(user.getUid(), user.getEmail(),name, phoneNumber, birthDay, address);
                 uploader(memberInfo);
             }else{
                 try {
@@ -180,7 +180,7 @@ public class MemberInitActivity extends BasicActivity {
                         public void onComplete(@NonNull Task<Uri> task) {
                             if (task.isSuccessful()) {
                                 Uri downloadUri = task.getResult();
-                                MemberInfo memberInfo = new MemberInfo(user.getEmail(),name, phoneNumber, birthDay, address, downloadUri.toString());
+                                MemberInfo memberInfo = new MemberInfo(user.getUid(), user.getEmail(),name, phoneNumber, birthDay, address, downloadUri.toString());
                                 uploader(memberInfo);
                             } else {
                                 startToast("회원정보를 보내는데 실패하였습니다.");
@@ -198,7 +198,7 @@ public class MemberInitActivity extends BasicActivity {
 
     private void uploader(MemberInfo memberInfo){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("users").document(user.getUid()).set(memberInfo)
+        db.collection("Users").document(user.getUid()).set(memberInfo)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -218,11 +218,12 @@ public class MemberInitActivity extends BasicActivity {
                 });
     }
 
+    // 실시간 데이터베이스에 필요값 부여
     private void SendData(){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-        DocumentReference docRef = db.collection("users").document(user.getUid());
+        DocumentReference docRef = db.collection("Users").document(user.getUid());
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -230,7 +231,9 @@ public class MemberInitActivity extends BasicActivity {
                     DocumentSnapshot document = task.getResult();
                     if(document != null){
                         if (document.exists()) {
-                            mDatabase.child("Authority").child(document.getData().get("name").toString()).setValue("권한 없음");
+                            mDatabase.child("Users").child(user.getUid()).child("권한").setValue("권한 없음");
+                            mDatabase.child("Users").child(user.getUid()).child("사용자 이름").setValue(document.getData().get("name").toString());
+                            mDatabase.child("Users").child(user.getUid()).child("사용자 이메일").setValue(user.getEmail());
                         } else {
                             Log.d("데이터", "No such document");
                         }

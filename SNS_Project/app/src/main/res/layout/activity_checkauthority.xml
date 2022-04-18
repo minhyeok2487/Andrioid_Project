@@ -10,19 +10,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="접속한 이메일 : "
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.257"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.436" />
+        android:textSize="20dp" />
 
     <EditText
         android:id="@+id/AuthorityParentId"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="부모님 이메일 입력"
+        android:hint="권한 요청 보낼 이메일 입력"
         android:inputType="textEmailAddress" />
 
     <Button

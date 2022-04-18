@@ -62,7 +62,7 @@ public class MainActivity extends BasicActivity {
     private static TextView CurrentEmail, CurrentName, CurrentPhone, childTextview;
     private static DatabaseReference mDatabase;
     private static String ChildName, ChildEmail;
-    private LinearLayout ButtonLayout;
+    private LinearLayout StartStopButtonsLayout;
 
     private static final int REQUEST_CODE = 1;
     Button Startbutton;
@@ -77,7 +77,7 @@ public class MainActivity extends BasicActivity {
         // 회원정보가 존재하는지 확인
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference docRef = db.collection("users").document(user.getUid());
+        DocumentReference docRef = db.collection("Users").document(user.getUid());
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -93,7 +93,7 @@ public class MainActivity extends BasicActivity {
                             CurrentPhone = (TextView) findViewById(R.id.PNumText);
                             CurrentPhone.setText("접속한 이름 : " + document.getData().get("phoneNumber"));
                             mDatabase = FirebaseDatabase.getInstance().getReference();
-                            mDatabase.child("users").child(user.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                            mDatabase.child("Users").child(user.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<DataSnapshot> task) {
                                     if (!task.isSuccessful()) {
@@ -103,6 +103,23 @@ public class MainActivity extends BasicActivity {
                                         Log.d("firebase", String.valueOf(task.getResult().getValue()));
                                         childTextview = (TextView)findViewById(R.id.childTextview);
                                         childTextview.setText(String.valueOf(task.getResult().getValue()));
+
+                                    }
+                                }
+                            });
+                            //권한을 받았을 때만 버튼 보이기
+                            mDatabase.child("Users").child(user.getUid()).child("권한").get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DataSnapshot> task) {
+                                    if(!task.isSuccessful()){
+                                        Log.e("firebase", "Error getting data", task.getException());
+                                    }else{
+                                        String data = String.valueOf(task.getResult().getValue());
+                                        String subdata = data.substring(data.length()-3,data.length());
+                                        if(subdata.equals("연결됨")){
+                                            StartStopButtonsLayout = findViewById(R.id.StartStopButtonsLayout);
+                                            StartStopButtonsLayout.setVisibility(View.VISIBLE);
+                                        }
                                     }
                                 }
                             });
@@ -155,11 +172,7 @@ public class MainActivity extends BasicActivity {
         findViewById(R.id.SendSignalButton).setOnClickListener(onClickListener);
         findViewById(R.id.CheckAuthority).setOnClickListener(onClickListener);
 
-        //자식 아이디 일때만 버튼 보이기
-        if(user.getUid().equals("be8dflcIjBg0e88Jg7JtkPd1z693")){
-            ButtonLayout = findViewById(R.id.ButtonLayout);
-            ButtonLayout.setVisibility(View.GONE);
-        }
+
         Startbutton = findViewById(R.id.Startbutton);
         Startbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -277,14 +290,14 @@ public class MainActivity extends BasicActivity {
     public void writeNewUser(String userId, String name, String email, String message) {
         User user = new User(name, email, message, new Date());
 
-        mDatabase.child("users").child(userId).child(name).child(user.getDate().toString()).setValue(message);
+        mDatabase.child("Users").child(userId).child(name).child(user.getDate().toString()).setValue(message);
     }
 
     private void SendData(String ParrentId){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference docRefParrent = db.collection("users").document(ParrentId);
-        DocumentReference docRefChild = db.collection("users").document(user.getUid());
+        DocumentReference docRefParrent = db.collection("Users").document(ParrentId);
+        DocumentReference docRefChild = db.collection("Users").document(user.getUid());
 
         docRefChild.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -333,7 +346,7 @@ public class MainActivity extends BasicActivity {
         //FirebaseDatabase database = FirebaseDatabase.getInstance();
         //DatabaseReference myRef = database.getReference("message");
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.child("users").child(userId).child(name).addValueEventListener(new ValueEventListener() {
+        mDatabase.child("Users").child(userId).child(name).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again

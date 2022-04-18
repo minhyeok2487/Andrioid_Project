@@ -57,7 +57,7 @@ public class CheckAuthorityActivity extends BasicActivity {
         // 회원정보가 존재하는지 확인
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference docRef = db.collection("users").document(user.getUid());
+        DocumentReference docRef = db.collection("Users").document(user.getUid());
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -65,23 +65,22 @@ public class CheckAuthorityActivity extends BasicActivity {
                     DocumentSnapshot document = task.getResult();
                     if(document != null){
                         if (document.exists()) {
-                            mDatabase.child("users").child(user.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                            mDatabase.child("Users").child(user.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<DataSnapshot> task) {
                                     if (!task.isSuccessful()) {
                                     }
                                     else {
                                         CurrentName[0] = (String) document.getData().get("name");
-                                        //데이터 권한요청이 들어오면 화면이 보임
-                                        mDatabase.child("Authority").child(CurrentName[0]).addValueEventListener(new ValueEventListener() {
+                                        mDatabase.child("Users").child(user.getUid()).child("권한").addValueEventListener(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 String str = dataSnapshot.getValue().toString();
                                                 String[] array = str.split("/");
                                                 if(dataSnapshot.getValue().toString().equals("권한 없음") ){
 
-                                                } else if(array[0].equals("권한요청보냄")){
-                                                    DialogClick(array[1]);
+                                                } else if(array[0].equals("권한요청받음")){
+                                                    DialogClick(array[1], array[2]);
                                                 }
                                                 else{
                                                 }
@@ -106,6 +105,9 @@ public class CheckAuthorityActivity extends BasicActivity {
             }
         });
 
+        TextView AuthorityEmailText = (TextView) findViewById(R.id.AuthorityEmailText);
+        AuthorityEmailText.setText("접속한 이메일 : " + user.getEmail());
+
         // 버튼 리스너
         findViewById(R.id.AuthoritySendButton).setOnClickListener(onClickListener);
     }
@@ -117,6 +119,8 @@ public class CheckAuthorityActivity extends BasicActivity {
                 case R.id.AuthoritySendButton:
                     EditText ParentId = (EditText)findViewById(R.id.AuthorityParentId);
                     SendData(ParentId.getText().toString());
+                    startToast(ParentId.getText().toString()+"에게 요청보내기 완료");
+                    finish();
                     break;
             }
         }
@@ -127,7 +131,7 @@ public class CheckAuthorityActivity extends BasicActivity {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         final String[] ChildName = new String[1];
 
-        DocumentReference docRefChild = db.collection("users").document(user.getUid());
+        DocumentReference docRefChild = db.collection("Users").document(user.getUid());
         docRefChild.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -136,7 +140,24 @@ public class CheckAuthorityActivity extends BasicActivity {
                     if(document != null){
                         if (document.exists()) {
                             ChildName[0] = (String) document.getData().get("name");
-                            //ChildEmail = user.getEmail();
+                            db.collection("Users")
+                                    .whereEqualTo("email", ParentId)
+                                    .get()
+                                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                            if (task.isSuccessful()) {
+                                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                                    mDatabase.child("Users")
+                                                            .child(document.getData().get("uidCode").toString())
+                                                            .child("권한")
+                                                            .setValue("권한요청받음/"+ChildName[0]+"/"+user.getUid());
+                                                }
+                                            } else {
+                                                Log.d("부모데이터", "No such document");
+                                            }
+                                        }
+                                    });
                         } else {
                             Log.d("자식데이터", "No such document");
                         }
@@ -146,57 +167,14 @@ public class CheckAuthorityActivity extends BasicActivity {
                 }
             }
         });
-
-        db.collection("users")
-                .whereEqualTo("email", ParentId)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d("부모 이름",document.getData().get("name").toString());
-                                Log.d("부모 번호",document.getData().get("phoneNumber").toString());
-                                mDatabase.child("Authority").child(document.getData().get("name").toString()).setValue("권한요청보냄/"+ChildName[0]);
-                            }
-                        } else {
-                            Log.d("부모데이터", "No such document");
-                        }
-                    }
-                });
     }
-
-    private void Okay(String email){
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-        DocumentReference docRef = db.collection("users").document(user.getUid());
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if(document != null){
-                        if (document.exists()) {
-                            mDatabase.child("Authority").child(document.getData().get("name").toString()).setValue("자식 데이터 / "+email);
-                        } else {
-                            Log.d("데이터", "No such document");
-                        }
-                    }
-                } else {
-                    Log.d(TAG, "get failed with ", task.getException());
-                }
-            }
-        });
-    }
-
-    public void DialogClick(String name){
+    public void DialogClick(String name, String uidCode){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("수락요청").setMessage(name+"으로 부터의 등록 요청을 수락하시겠습니까?");
         builder.setPositiveButton("수락", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                Okay("자식 이메일 받아야함");
+                Okay(name, uidCode);
                 Toast.makeText(getApplicationContext(), "Yeah!!",Toast.LENGTH_SHORT).show();
             }
         });
@@ -210,11 +188,53 @@ public class CheckAuthorityActivity extends BasicActivity {
         alertDialog.show();
     }
 
+    private void Okay(String name, String UidCode){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
+        DocumentReference docRef = db.collection("Users").document(user.getUid());
 
-    public void writeNewUser(String userId, String name, String email, String message) {
-        MainActivity.User user = new MainActivity.User(name, email, message, new Date());
+        db.collection("Users")
+                .whereEqualTo("uidCode", UidCode)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                mDatabase.child("Users").child(user.getUid()).child("연결된 코드").setValue(UidCode);
+                                mDatabase.child("Users").child(user.getUid()).child("권한").setValue(name+"과 연결됨");
+                                mDatabase.child("Users").child(UidCode).child("연결된 코드").setValue(user.getUid());
+                            }
+                        } else {
+                            Log.d("부모데이터", "No such document");
+                        }
+                    }
+                });
 
-        mDatabase.child("users").child(userId).child(name).child(user.getDate().toString()).setValue(message);
+      docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+          @Override
+         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+               if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if(document != null){
+                  if (document.exists()) {
+                      mDatabase.child("Users").child(UidCode).child("권한").setValue(document.getData().get("name")+"과 연결됨");
+                      } else {
+                         Log.d("데이터", "No such document");
+                     }
+                 }
+             } else {
+                   Log.d(TAG, "get failed with ", task.getException());
+              }
+           }
+     });
+
+
     }
 
+
+    private void startToast(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
 }
