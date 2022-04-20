@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -49,6 +50,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 
 public class MemberInitActivity extends BasicActivity {
@@ -57,6 +60,10 @@ public class MemberInitActivity extends BasicActivity {
     private String profilePath;
     private FirebaseUser user;
     private RelativeLayout loaderLayout;
+    private CardView cardView;
+    private boolean flag = true;
+    private String dbName, dbPhoneNumber, dbBirthDay, dbAddress, dbImage, dbEmail;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,19 +71,57 @@ public class MemberInitActivity extends BasicActivity {
 
         profileImageVIew = findViewById(R.id.profileImageView);
         profileImageVIew.setOnClickListener(onClickListener);
+        cardView = findViewById(R.id.buttonsCardView);
 
         loaderLayout = findViewById(R.id.loaderLayout);
         findViewById(R.id.checkButton).setOnClickListener(onClickListener);
         findViewById(R.id.picture).setOnClickListener(onClickListener);
         findViewById(R.id.gallery).setOnClickListener(onClickListener);
-    }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        moveTaskToBack(true);
-        android.os.Process.killProcess(android.os.Process.myPid());
-        System.exit(1);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference docRef = db.collection("Users").document(user.getUid());
+
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document != null) {
+                        if (document.exists()) {
+                            flag = false;
+                            // 개인정보가 있다면 정보 출력
+                            Map<String, Object> hm = document.getData();
+                            dbName = hm.get("name").toString();
+                            dbPhoneNumber = hm.get("phoneNumber").toString();
+                            dbBirthDay = hm.get("birthDay").toString();
+                            dbAddress = hm.get("address").toString();
+                            if(hm.get("photoUrl").toString() != null){
+                                dbImage = hm.get("photoUrl").toString();
+                                Glide.with(MemberInitActivity.this).load(dbImage).centerCrop().override(500).into(profileImageVIew);
+                            }
+                            EditText etName = (EditText) findViewById(R.id.nameEditText);
+                            EditText etPhoneNumber = (EditText) findViewById(R.id.phoneNumberEditText);
+                            EditText etBirthDay = (EditText) findViewById(R.id.birthDayEditText);
+                            EditText etAddress = (EditText) findViewById(R.id.addressEditText);
+
+                            etName.setText(dbName);
+                            etPhoneNumber.setText(dbPhoneNumber);
+                            etBirthDay.setText(dbBirthDay);
+                            etAddress.setText(dbAddress);
+
+
+
+                            if (hm.get("email") != null) {
+                                dbEmail = hm.get("email").toString();
+                            }
+
+                        }
+                    }
+                }
+            }
+        });
+
     }
 
     @Override
@@ -101,8 +146,7 @@ public class MemberInitActivity extends BasicActivity {
                     profileUpdate();
                     break;
                 case R.id.profileImageView:
-                    CardView cardView = findViewById(R.id.buttonsCardView);
-                    if(cardView.getVisibility() == View.VISIBLE){
+                    if (cardView.getVisibility() == View.VISIBLE) {
                         cardView.setVisibility(View.GONE);
                     } else {
                         cardView.setVisibility(View.VISIBLE);
@@ -110,6 +154,7 @@ public class MemberInitActivity extends BasicActivity {
                     break;
                 case R.id.picture:
                     myStartActivity(CameraActivity.class);
+                    cardView.setVisibility(View.GONE);
                     break;
                 case R.id.gallery:
                     if (ContextCompat.checkSelfPermission(MemberInitActivity.this,
@@ -123,8 +168,9 @@ public class MemberInitActivity extends BasicActivity {
                         } else {
                             startToast("권한을 허용해 주세요");
                         }
-                    }else{
+                    } else {
                         myStartGalleryActivity(GalleryActivity.class, "image", 0);
+                        cardView.setVisibility(View.GONE);
                     }
                     break;
 
@@ -153,50 +199,70 @@ public class MemberInitActivity extends BasicActivity {
         final String birthDay = ((EditText) findViewById(R.id.birthDayEditText)).getText().toString();
         final String address = ((EditText) findViewById(R.id.addressEditText)).getText().toString();
 
-        if (name.length() > 0 && phoneNumber.length() > 9 && birthDay.length() > 5 && address.length() > 0) {
-            loaderLayout.setVisibility(View.VISIBLE);
-            FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference storageRef = storage.getReference();
-            user = FirebaseAuth.getInstance().getCurrentUser();
-            final StorageReference mountainImagesRef = storageRef.child("Users/" + user.getUid() + "/profileImage.jpg");
+        if (name.length() > 0) {
+            if (Pattern.matches("^[0-9]*$", phoneNumber)) {
+                if (phoneNumber.length() == 11) {
+                    if (Pattern.matches("^[0-9]*$", birthDay)) {
+                        if (birthDay.length() == 8) {
+                            if (address.length() > 0) {
+                                loaderLayout.setVisibility(View.VISIBLE);
+                                FirebaseStorage storage = FirebaseStorage.getInstance();
+                                StorageReference storageRef = storage.getReference();
+                                user = FirebaseAuth.getInstance().getCurrentUser();
+                                final StorageReference mountainImagesRef = storageRef.child("Users/" + user.getUid() + "/profileImage.jpg");
 
-            if(profilePath == null){
-                MemberInfo memberInfo = new MemberInfo(user.getUid(), user.getEmail(),name, phoneNumber, birthDay, address);
-                uploader(memberInfo);
-            }else{
-                try {
-                    InputStream stream = new FileInputStream(new File(profilePath));
-                    UploadTask uploadTask = mountainImagesRef.putStream(stream);
-                    uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-                        @Override
-                        public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                            if (!task.isSuccessful()) {
-                                throw task.getException();
-                            }
-                            return mountainImagesRef.getDownloadUrl();
-                        }
-                    }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Uri> task) {
-                            if (task.isSuccessful()) {
-                                Uri downloadUri = task.getResult();
-                                MemberInfo memberInfo = new MemberInfo(user.getUid(), user.getEmail(),name, phoneNumber, birthDay, address, downloadUri.toString());
-                                uploader(memberInfo);
+                                if (profilePath == null) {
+                                    MemberInfo memberInfo = new MemberInfo(user.getUid(), user.getEmail(), name, phoneNumber, birthDay, address);
+                                    uploader(memberInfo);
+                                } else {
+                                    try {
+                                        InputStream stream = new FileInputStream(new File(profilePath));
+                                        UploadTask uploadTask = mountainImagesRef.putStream(stream);
+                                        uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                                            @Override
+                                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                                                if (!task.isSuccessful()) {
+                                                    throw task.getException();
+                                                }
+                                                return mountainImagesRef.getDownloadUrl();
+                                            }
+                                        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Uri> task) {
+                                                if (task.isSuccessful()) {
+                                                    Uri downloadUri = task.getResult();
+                                                    MemberInfo memberInfo = new MemberInfo(user.getUid(), user.getEmail(), name, phoneNumber, birthDay, address, downloadUri.toString());
+                                                    uploader(memberInfo);
+                                                } else {
+                                                    startToast("회원정보를 보내는데 실패하였습니다.");
+                                                }
+                                            }
+                                        });
+                                    } catch (FileNotFoundException e) {
+                                        Log.e(TAG, "파일이 존재하지 않습니다.");
+                                    }
+                                }
                             } else {
-                                startToast("회원정보를 보내는데 실패하였습니다.");
+                                startToast("주소를 입력해주세요");
                             }
+                        } else {
+                            startToast("생년월일을 입력해주세요 (ex. 19950101)");
                         }
-                    });
-                } catch (FileNotFoundException e) {
-                    Log.e("로그", "에러: " + e.toString());
+                    } else {
+                        startToast("생년월일은 숫자만 입력 가능합니다 (ex. 19950101)");
+                    }
+                } else {
+                    startToast("휴대폰 번호를 입력해주세요 (-제외)");
                 }
+            } else {
+                startToast("휴대폰 번호는 숫자만 입력해주세요 (-제외)");
             }
         } else {
-            startToast("회원정보를 입력해주세요.");
+            startToast("이름을 입력해주세요");
         }
     }
 
-    private void uploader(MemberInfo memberInfo){
+    private void uploader(MemberInfo memberInfo) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Users").document(user.getUid()).set(memberInfo)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -219,7 +285,7 @@ public class MemberInitActivity extends BasicActivity {
     }
 
     // 실시간 데이터베이스에 필요값 부여
-    private void SendData(){
+    private void SendData() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
@@ -229,7 +295,7 @@ public class MemberInitActivity extends BasicActivity {
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
-                    if(document != null){
+                    if (document != null) {
                         if (document.exists()) {
                             mDatabase.child("Users").child(user.getUid()).child("권한").setValue("권한 없음");
                             mDatabase.child("Users").child(user.getUid()).child("사용자 이름").setValue(document.getData().get("name").toString());

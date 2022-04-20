@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/childMenu"
+        android:title="@string/childMenu" >
+        <menu>
+            <item
+                android:id="@+id/child1"
+                android:title="@string/child1" />
+            <item
+                android:id="@+id/child2"
+                android:title="@string/child2" />
+        </menu>
+
+    </item>
+</menu>

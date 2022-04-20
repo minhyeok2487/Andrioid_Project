@@ -63,7 +63,7 @@ public class LoginActivity extends BasicActivity {
                                 myStartActivity(MainActivity.class);
                             } else {
                                 // 회원정보 DB가 없다면 회원정보입력화면 실행
-                                myStartActivity(MemberInitActivity.class);
+                                // myStartActivity(MemberInitActivity.class);
                             }
                         }
                     } else {
@@ -87,6 +87,7 @@ public class LoginActivity extends BasicActivity {
         // 버튼 리스너
         findViewById(R.id.gotoSignupButton).setOnClickListener(onClickListener);
         findViewById(R.id.LoginButton).setOnClickListener(onClickListener);
+        findViewById(R.id.searchIdBtn).setOnClickListener(onClickListener);
         findViewById(R.id.gotoPasswordResetButton).setOnClickListener(onClickListener);
         findViewById(R.id.Google_sign_in_button).setOnClickListener(onClickListener);
     }
@@ -106,6 +107,9 @@ public class LoginActivity extends BasicActivity {
                     break;
                 case R.id.Google_sign_in_button:
                     signIn();
+                    break;
+                case R.id.searchIdBtn:
+                    myStartActivity(SearchIDActivity.class);
                     break;
             }
         }
@@ -146,7 +150,8 @@ public class LoginActivity extends BasicActivity {
 
                             } else {
                                 if (task.getException() != null) {
-                                    startToast(task.getException().toString());
+                                    loaderLayout.setVisibility(View.GONE);
+                                    startToast("이메일이 존재하지 않습니다.");
                                 }
                             }
                         }

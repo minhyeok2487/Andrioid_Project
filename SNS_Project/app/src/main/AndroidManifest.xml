@@ -77,6 +77,25 @@
         <activity android:name=".CheckAuthorityActivity">
         </activity>
 
+        <activity
+            android:name=".Maps.ParentsActivity"
+            android:exported="true" />
+        <activity
+            android:name=".Maps.ChildActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".MHtest" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAQGqbBEM_0T_OuvMF7KLDASBx89ee779k"/>
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+
     </application>
 
 </manifest>

@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
@@ -24,8 +25,6 @@ import com.google.firebase.auth.FirebaseUser;
 public class SignUpActivity extends BasicActivity {
     private static final String TAG = "SignUpActivity";
     private FirebaseAuth mAuth;
-    GoogleSignInClient mGoogleSignInClient;
-    private final int RC_SIGN_IN = 123;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +53,7 @@ public class SignUpActivity extends BasicActivity {
 
         if (email.length() > 0 && password.length() > 0 && passwordCheck.length() > 0) {
             if (password.equals(passwordCheck)) {
-
+                //로딩 화면 실행
                 final RelativeLayout loaderLayout = findViewById(R.id.loaderLayout);
                 loaderLayout.setVisibility(View.VISIBLE);
                 mAuth.createUserWithEmailAndPassword(email, password)
@@ -68,7 +67,7 @@ public class SignUpActivity extends BasicActivity {
                                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
-                                                    startToast("메일 발송 완료");
+                                                    Log.d(TAG,"회원 가입 메일이 발송되었습니다.");
                                                 }
                                             });
                                     finish();
@@ -76,7 +75,7 @@ public class SignUpActivity extends BasicActivity {
                                 } else {
                                     loaderLayout.setVisibility(View.GONE);
                                     if (task.getException() != null) {
-                                        startToast(task.getException().toString());
+                                        startToast("이미 존재하는 계정입니다.");
                                     }
                                 }
                             }
@@ -85,7 +84,7 @@ public class SignUpActivity extends BasicActivity {
                 startToast("비밀번호가 일치하지 않습니다.");
             }
         } else {
-            startToast("이메일 또는 비밀번호를 입력해 주세요.");
+            startToast("이메일 또는 비밀번호를 전부 입력해 주세요.");
         }
     }
 

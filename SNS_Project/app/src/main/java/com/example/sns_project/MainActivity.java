@@ -1,37 +1,22 @@
 package com.example.sns_project;
 
-import static com.example.sns_project.Action.START_LOCATION_SERVICE;
-import static com.google.firebase.messaging.Constants.MessagePayloadKeys.SENDER_ID;
-
 import android.Manifest;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.sns_project.CameraGallerys.GalleryAdapter;
-import com.example.sns_project.Posts.PostInfo;
-import com.example.sns_project.Posts.WritePostActivity;
-import com.example.sns_project.R;
+import com.example.sns_project.Maps.ChildActivity;
+import com.example.sns_project.Maps.ParentsActivity;
 import com.example.sns_project.SignLogins.LoginActivity;
 import com.example.sns_project.SignLogins.MemberInitActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -41,38 +26,28 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.Exclude;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.RemoteMessage;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainActivity extends BasicActivity {
     private static final String TAG = "MainActivity";
     private static TextView CurrentEmail, CurrentName, CurrentPhone, childTextview;
     private static DatabaseReference mDatabase;
     private static String ChildName, ChildEmail;
-    private LinearLayout StartStopButtonsLayout;
-
+    private LinearLayout StartStopButtonsLayout, MapsButtonsLayout;
     private static final int REQUEST_CODE = 1;
     Button Startbutton;
-    Button Stopbutton;
+    Button Stopbutton, Cbutton, Pbutton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
         // 회원정보가 존재하는지 확인
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -137,41 +112,40 @@ public class MainActivity extends BasicActivity {
         });
 
         //게시글 화면에 보여주기
-        db.collection("posts")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            ArrayList<PostInfo> postList = new ArrayList<>();
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d(TAG, document.getId() + " => " + document.getData());
-                                postList.add(new PostInfo(
-                                        document.getData().get("title").toString(),
-                                        (ArrayList<String>) document.getData().get("contents"),
-                                        document.getData().get("publisher").toString(),
-                                        new Date(document.getDate("createdAt").getTime())));
-                            }
-
-                            RecyclerView recyclerView = findViewById(R.id.recyclerView);
-                            recyclerView.setHasFixedSize(true);
-                            recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
-
-                            RecyclerView.Adapter mAdapter = new MainAdapter(MainActivity.this, postList);
-                            recyclerView.setAdapter(mAdapter);
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
+//        db.collection("posts")
+//                .get()
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        if (task.isSuccessful()) {
+//                            ArrayList<PostInfo> postList = new ArrayList<>();
+//                            for (QueryDocumentSnapshot document : task.getResult()) {
+//                                Log.d(TAG, document.getId() + " => " + document.getData());
+//                                postList.add(new PostInfo(
+//                                        document.getData().get("title").toString(),
+//                                        (ArrayList<String>) document.getData().get("contents"),
+//                                        document.getData().get("publisher").toString(),
+//                                        new Date(document.getDate("createdAt").getTime())));
+//                            }
+//
+//                            RecyclerView recyclerView = findViewById(R.id.recyclerView);
+//                            recyclerView.setHasFixedSize(true);
+//                            recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+//
+//                            RecyclerView.Adapter mAdapter = new MainAdapter(MainActivity.this, postList);
+//                            recyclerView.setAdapter(mAdapter);
+//                        } else {
+//                            Log.d(TAG, "Error getting documents: ", task.getException());
+//                        }
+//                    }
+//                });
 
 
         // 버튼 리스너
         findViewById(R.id.logoutButton).setOnClickListener(onClickListener);
-        findViewById(R.id.floatingActionButton).setOnClickListener(onClickListener);
-        findViewById(R.id.SendSignalButton).setOnClickListener(onClickListener);
         findViewById(R.id.CheckAuthority).setOnClickListener(onClickListener);
-
+        findViewById(R.id.updateButton).setOnClickListener(onClickListener);
+        findViewById(R.id.buttonTest).setOnClickListener(onClickListener);
 
         Startbutton = findViewById(R.id.Startbutton);
         Startbutton.setOnClickListener(new View.OnClickListener() {
@@ -184,6 +158,7 @@ public class MainActivity extends BasicActivity {
                     //위치 권한 요청
                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
                 } else {
+                    myStartActivity(MHtest.class);
                     startLocationService();
                 }
             }
@@ -193,6 +168,22 @@ public class MainActivity extends BasicActivity {
             @Override
             public void onClick(View view) {
                 stopLocationService();
+            }
+        });
+
+        Cbutton = findViewById(R.id.Cbutton);
+        Cbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myStartActivity2(ChildActivity.class);
+            }
+        });
+
+        Pbutton = findViewById(R.id.Pbutton);
+        Pbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myStartActivity2(ParentsActivity.class);
             }
         });
 
@@ -206,29 +197,26 @@ public class MainActivity extends BasicActivity {
                     FirebaseAuth.getInstance().signOut();
                     myStartActivity(LoginActivity.class);
                     break;
-                case R.id.floatingActionButton:
-                    myStartActivity(WritePostActivity.class);
-                    break;
-                case R.id.SendSignalButton:
-                    //데이터 보내고 받기
-                    EditText ParentId = (EditText)findViewById(R.id.ParentId);
-                    SendData(ParentId.getText().toString());
-                    break;
                 case R.id.CheckAuthority:
-                    myStartActivity(CheckAuthorityActivity.class);
+                    myStartActivity2(CheckAuthorityActivity.class);
+                    break;
+                case R.id.updateButton:
+                    myStartActivity(MemberInitActivity.class);
+                    break;
+                case R.id.buttonTest:
+                    myStartActivity(MHtest.class);
                     break;
             }
         }
     };
-
-
-
 
     private void startLocationService() {
         Intent startIntent = new Intent(getApplicationContext(), LocationService.class);
         startIntent.setAction(Action.START_LOCATION_SERVICE);
         startService(startIntent);
         Toast.makeText(this, "위치 업데이트 실행", Toast.LENGTH_SHORT).show();
+        MapsButtonsLayout = findViewById(R.id.MapsButtonsLayout);
+        MapsButtonsLayout.setVisibility(View.VISIBLE);
     }
 
     private void stopLocationService() {
@@ -265,6 +253,12 @@ public class MainActivity extends BasicActivity {
 
     private void myStartActivity(Class c) {
         Intent intent = new Intent(this, c);
+        startActivity(intent);
+    }
+
+    private void myStartActivity2(Class c) {
+        Intent intent = new Intent(this, c);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 
@@ -363,5 +357,7 @@ public class MainActivity extends BasicActivity {
             }
         });
     }
+
+
 
 }
