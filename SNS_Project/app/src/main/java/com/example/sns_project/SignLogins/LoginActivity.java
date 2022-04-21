@@ -45,8 +45,6 @@ public class LoginActivity extends BasicActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        // 이메일 인증을 완료해야만 다음으로 넘어감
-
         // 이미 로그인 되어있는지 확인
         if (user == null) {
             // 로그인 되어있지 않다면 그대로 로그인 화면이 나타남
@@ -62,7 +60,7 @@ public class LoginActivity extends BasicActivity {
                         if (document != null) {
                             if (document.exists()) {
                                 // 회원정보 DB까지 있다면
-                                // 이메일 인증된 계정인지 확인
+                                // 이메일 인증을 완료해야만 다음으로 넘어감
                                 if (user.isEmailVerified()){
                                     myStartActivity(MainActivity.class);
                                 } else {

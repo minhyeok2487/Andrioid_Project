@@ -20,6 +20,7 @@ import com.example.sns_project.Maps.ParentsActivity;
 import com.example.sns_project.SignLogins.LoginActivity;
 import com.example.sns_project.SignLogins.MemberInitActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -43,6 +44,7 @@ public class MainActivity extends BasicActivity {
     private static final int REQUEST_CODE = 1;
     Button Startbutton;
     Button Stopbutton, Cbutton, Pbutton;
+    Button buttonTest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,7 @@ public class MainActivity extends BasicActivity {
         // 회원정보가 존재하는지 확인
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
         DocumentReference docRef = db.collection("Users").document(user.getUid());
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -67,7 +70,6 @@ public class MainActivity extends BasicActivity {
                             CurrentName.setText("접속한 이름 : " + document.getData().get("name"));
                             CurrentPhone = (TextView) findViewById(R.id.PNumText);
                             CurrentPhone.setText("접속한 이름 : " + document.getData().get("phoneNumber"));
-                            mDatabase = FirebaseDatabase.getInstance().getReference();
                             mDatabase.child("Users").child(user.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<DataSnapshot> task) {
@@ -147,6 +149,23 @@ public class MainActivity extends BasicActivity {
         findViewById(R.id.updateButton).setOnClickListener(onClickListener);
         findViewById(R.id.buttonTest).setOnClickListener(onClickListener);
 
+        mDatabase.child("Users").child(user.getUid()).child("연결된 코드의 좌표").get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if(!task.isSuccessful()){
+                    Log.e("firebase", "Error getting data", task.getException());
+                }else{
+                    LinearLayout buttonTestLayout = findViewById(R.id.buttonTestLayout);
+                    if(task.getResult().getValue() != null){
+                        buttonTestLayout.setVisibility(View.VISIBLE);
+                    } else {
+                        buttonTestLayout.setVisibility(View.GONE);
+                    }
+                }
+            }
+        });
+
+
         Startbutton = findViewById(R.id.Startbutton);
         Startbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -158,7 +177,7 @@ public class MainActivity extends BasicActivity {
                     //위치 권한 요청
                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
                 } else {
-                    myStartActivity(MHtest.class);
+                    //myStartActivity(MHtest.class);
                     startLocationService();
                 }
             }
@@ -215,8 +234,8 @@ public class MainActivity extends BasicActivity {
         startIntent.setAction(Action.START_LOCATION_SERVICE);
         startService(startIntent);
         Toast.makeText(this, "위치 업데이트 실행", Toast.LENGTH_SHORT).show();
-        MapsButtonsLayout = findViewById(R.id.MapsButtonsLayout);
-        MapsButtonsLayout.setVisibility(View.VISIBLE);
+        //MapsButtonsLayout = findViewById(R.id.MapsButtonsLayout);
+        //MapsButtonsLayout.setVisibility(View.VISIBLE);
     }
 
     private void stopLocationService() {

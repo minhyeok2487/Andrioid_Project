@@ -60,14 +60,16 @@
             android:id="@+id/Startbutton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="start" />
+            android:text="위치전송 START" />
 
         <Button
             android:id="@+id/Stopbutton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:text="stop" />
+            android:layout_marginRight="10dp"
+            android:text="위치전송 STOP" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -76,7 +78,8 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="horizontal"
-        android:padding="10dp">
+        android:padding="10dp"
+        android:visibility="gone">
 
         <Button
             android:id="@+id/Cbutton"
@@ -90,6 +93,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:text="상대방 위치" />
+
     </LinearLayout>
 
 
@@ -97,18 +101,28 @@
         android:id="@+id/childTextview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="실시간 데이터베이스 확인" />
+        android:hint="실시간 데이터베이스 확인"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/buttonTestLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/buttonTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="상대방 위치 보기" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/logoutButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="로그아웃" />
-
-    <Button
-        android:id="@+id/buttonTest"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Button" />
 
 </LinearLayout>
