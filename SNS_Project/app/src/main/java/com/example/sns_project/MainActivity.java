@@ -273,7 +273,6 @@ public class MainActivity extends BasicActivity {
                     Toast.makeText(this, "Permission  denied", Toast.LENGTH_SHORT).show();
                 }
         }
-        Toast.makeText(this, "asdafdgfdfsdsfdf", Toast.LENGTH_LONG).show();
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
