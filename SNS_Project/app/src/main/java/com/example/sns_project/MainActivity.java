@@ -85,19 +85,23 @@ public class MainActivity extends BasicActivity {
                                 }
                             });
                             //권한을 받았을 때만 버튼 보이기
-                            mDatabase.child("Users").child(user.getUid()).child("권한").get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                            mDatabase.child("Users").child(user.getUid()).child("권한").addValueEventListener(new ValueEventListener() {
                                 @Override
-                                public void onComplete(@NonNull Task<DataSnapshot> task) {
-                                    if(!task.isSuccessful()){
-                                        Log.e("firebase", "Error getting data", task.getException());
-                                    }else{
-                                        String data = String.valueOf(task.getResult().getValue());
-                                        String subdata = data.substring(data.length()-3,data.length());
-                                        if(subdata.equals("연결됨")){
-                                            StartStopButtonsLayout = findViewById(R.id.StartStopButtonsLayout);
-                                            StartStopButtonsLayout.setVisibility(View.VISIBLE);
-                                        }
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    String data = String.valueOf(dataSnapshot.getValue());
+                                    String subdata = data.substring(data.length()-3,data.length());
+                                    StartStopButtonsLayout = findViewById(R.id.StartStopButtonsLayout);
+                                    if(subdata.equals("연결됨")){
+                                        StartStopButtonsLayout.setVisibility(View.VISIBLE);
+                                        Toast.makeText(MainActivity.this, "권한 받음", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        StartStopButtonsLayout.setVisibility(View.GONE);
                                     }
+                                }
+                                @Override
+                                public void onCancelled(DatabaseError error) {
+                                    // Failed to read value
+                                    Log.w(TAG, "Failed to read value.", error.toException());
                                 }
                             });
 
@@ -149,19 +153,23 @@ public class MainActivity extends BasicActivity {
         findViewById(R.id.updateButton).setOnClickListener(onClickListener);
         findViewById(R.id.buttonTest).setOnClickListener(onClickListener);
 
-        mDatabase.child("Users").child(user.getUid()).child("연결된 코드의 좌표").get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+
+        mDatabase.child("Users").child(user.getUid()).addValueEventListener(new ValueEventListener() {
             @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if(!task.isSuccessful()){
-                    Log.e("firebase", "Error getting data", task.getException());
-                }else{
-                    LinearLayout buttonTestLayout = findViewById(R.id.buttonTestLayout);
-                    if(task.getResult().getValue() != null){
-                        buttonTestLayout.setVisibility(View.VISIBLE);
-                    } else {
-                        buttonTestLayout.setVisibility(View.GONE);
-                    }
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                LinearLayout buttonTestLayout = findViewById(R.id.buttonTestLayout);
+                if(dataSnapshot.child("연결된 코드의 좌표").getValue() != null){
+                    buttonTestLayout.setVisibility(View.VISIBLE);
+                    Toast.makeText(MainActivity.this, "상대방이 위치를 업데이트 하였습니다", Toast.LENGTH_SHORT).show();
+                } else {
+                    buttonTestLayout.setVisibility(View.GONE);
                 }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
 
