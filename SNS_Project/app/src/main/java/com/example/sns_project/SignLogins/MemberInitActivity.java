@@ -96,7 +96,7 @@ public class MemberInitActivity extends BasicActivity {
                             dbPhoneNumber = hm.get("phoneNumber").toString();
                             dbBirthDay = hm.get("birthDay").toString();
                             dbAddress = hm.get("address").toString();
-                            if(hm.get("photoUrl").toString() != null){
+                            if(hm.get("photoUrl") != null){
                                 dbImage = hm.get("photoUrl").toString();
                                 Glide.with(MemberInitActivity.this).load(dbImage).centerCrop().override(500).into(profileImageVIew);
                             }

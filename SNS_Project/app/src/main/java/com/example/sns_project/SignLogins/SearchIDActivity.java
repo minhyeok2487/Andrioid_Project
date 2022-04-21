@@ -71,7 +71,7 @@ public class SearchIDActivity extends BasicActivity {
     private void searchId(String number){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("users")
+        db.collection("Users")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -127,6 +127,8 @@ public class SearchIDActivity extends BasicActivity {
 
         int randomCode = (int) (1 + Math.random() * 999999);
         Log.d(TAG, "codeNumber1 "+ randomCode);
+        String codeQ = String.valueOf(randomCode);
+        startToast(codeQ);
 
         EditText codeText = (EditText) dialogView.findViewById(R.id.inputCode);
         Button codeBtn = (Button) dialogView.findViewById(R.id.checkCodeBtn);
