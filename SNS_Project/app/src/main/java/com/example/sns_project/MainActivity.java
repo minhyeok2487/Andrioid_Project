@@ -1,88 +1,61 @@
 package com.example.sns_project;
 
-import static com.example.sns_project.Action.START_LOCATION_SERVICE;
-import static com.google.firebase.messaging.Constants.MessagePayloadKeys.SENDER_ID;
-
 import android.Manifest;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.sns_project.CameraGallerys.GalleryAdapter;
-import com.example.sns_project.Posts.PostInfo;
-import com.example.sns_project.Posts.WritePostActivity;
-import com.example.sns_project.R;
+import com.example.sns_project.Maps.ChildActivity;
+import com.example.sns_project.Maps.ParentsActivity;
 import com.example.sns_project.SignLogins.LoginActivity;
 import com.example.sns_project.SignLogins.MemberInitActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.Exclude;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.RemoteMessage;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainActivity extends BasicActivity {
     private static final String TAG = "MainActivity";
     private static TextView CurrentEmail, CurrentName, CurrentPhone, childTextview;
     private static DatabaseReference mDatabase;
     private static String ChildName, ChildEmail;
-    private LinearLayout ButtonLayout;
-
+    private LinearLayout StartStopButtonsLayout, MapsButtonsLayout;
     private static final int REQUEST_CODE = 1;
     Button Startbutton;
-    Button Stopbutton;
-
-
-
+    Button Stopbutton, Cbutton, Pbutton;
+    Button buttonTest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-
-
         // 회원정보가 존재하는지 확인
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference docRef = db.collection("users").document(user.getUid());
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        DocumentReference docRef = db.collection("Users").document(user.getUid());
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -97,8 +70,7 @@ public class MainActivity extends BasicActivity {
                             CurrentName.setText("접속한 이름 : " + document.getData().get("name"));
                             CurrentPhone = (TextView) findViewById(R.id.PNumText);
                             CurrentPhone.setText("접속한 이름 : " + document.getData().get("phoneNumber"));
-                            mDatabase = FirebaseDatabase.getInstance().getReference();
-                            mDatabase.child("users").child(user.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                            mDatabase.child("Users").child(user.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<DataSnapshot> task) {
                                     if (!task.isSuccessful()) {
@@ -108,7 +80,28 @@ public class MainActivity extends BasicActivity {
                                         Log.d("firebase", String.valueOf(task.getResult().getValue()));
                                         childTextview = (TextView)findViewById(R.id.childTextview);
                                         childTextview.setText(String.valueOf(task.getResult().getValue()));
+
                                     }
+                                }
+                            });
+                            //권한을 받았을 때만 버튼 보이기
+                            mDatabase.child("Users").child(user.getUid()).child("권한").addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    String data = String.valueOf(dataSnapshot.getValue());
+                                    String subdata = data.substring(data.length()-3,data.length());
+                                    StartStopButtonsLayout = findViewById(R.id.StartStopButtonsLayout);
+                                    if(subdata.equals("연결됨")){
+                                        StartStopButtonsLayout.setVisibility(View.VISIBLE);
+                                        Toast.makeText(MainActivity.this, "권한 받음", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        StartStopButtonsLayout.setVisibility(View.GONE);
+                                    }
+                                }
+                                @Override
+                                public void onCancelled(DatabaseError error) {
+                                    // Failed to read value
+                                    Log.w(TAG, "Failed to read value.", error.toException());
                                 }
                             });
 
@@ -125,46 +118,62 @@ public class MainActivity extends BasicActivity {
         });
 
         //게시글 화면에 보여주기
-        db.collection("posts")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            ArrayList<PostInfo> postList = new ArrayList<>();
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d(TAG, document.getId() + " => " + document.getData());
-                                postList.add(new PostInfo(
-                                        document.getData().get("title").toString(),
-                                        (ArrayList<String>) document.getData().get("contents"),
-                                        document.getData().get("publisher").toString(),
-                                        new Date(document.getDate("createdAt").getTime())));
-                            }
-
-                            RecyclerView recyclerView = findViewById(R.id.recyclerView);
-                            recyclerView.setHasFixedSize(true);
-                            recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
-
-                            RecyclerView.Adapter mAdapter = new MainAdapter(MainActivity.this, postList);
-                            recyclerView.setAdapter(mAdapter);
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
+//        db.collection("posts")
+//                .get()
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        if (task.isSuccessful()) {
+//                            ArrayList<PostInfo> postList = new ArrayList<>();
+//                            for (QueryDocumentSnapshot document : task.getResult()) {
+//                                Log.d(TAG, document.getId() + " => " + document.getData());
+//                                postList.add(new PostInfo(
+//                                        document.getData().get("title").toString(),
+//                                        (ArrayList<String>) document.getData().get("contents"),
+//                                        document.getData().get("publisher").toString(),
+//                                        new Date(document.getDate("createdAt").getTime())));
+//                            }
+//
+//                            RecyclerView recyclerView = findViewById(R.id.recyclerView);
+//                            recyclerView.setHasFixedSize(true);
+//                            recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+//
+//                            RecyclerView.Adapter mAdapter = new MainAdapter(MainActivity.this, postList);
+//                            recyclerView.setAdapter(mAdapter);
+//                        } else {
+//                            Log.d(TAG, "Error getting documents: ", task.getException());
+//                        }
+//                    }
+//                });
 
 
         // 버튼 리스너
         findViewById(R.id.logoutButton).setOnClickListener(onClickListener);
-        findViewById(R.id.floatingActionButton).setOnClickListener(onClickListener);
-        findViewById(R.id.SendSignalButton).setOnClickListener(onClickListener);
-        findViewById(R.id.SendtoParent).setOnClickListener(onClickListener);
+        findViewById(R.id.CheckAuthority).setOnClickListener(onClickListener);
+        findViewById(R.id.updateButton).setOnClickListener(onClickListener);
+        findViewById(R.id.buttonTest).setOnClickListener(onClickListener);
 
-        //자식 아이디 일때만 버튼 보이기
-        if(user.getUid().equals("be8dflcIjBg0e88Jg7JtkPd1z693")){
-            ButtonLayout = findViewById(R.id.ButtonLayout);
-            ButtonLayout.setVisibility(View.GONE);
-        }
+
+        mDatabase.child("Users").child(user.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                LinearLayout buttonTestLayout = findViewById(R.id.buttonTestLayout);
+                if(dataSnapshot.child("연결된 코드의 좌표").getValue() != null){
+                    buttonTestLayout.setVisibility(View.VISIBLE);
+                    Toast.makeText(MainActivity.this, "상대방이 위치를 업데이트 하였습니다", Toast.LENGTH_SHORT).show();
+                } else {
+                    buttonTestLayout.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+
+
         Startbutton = findViewById(R.id.Startbutton);
         Startbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -176,6 +185,7 @@ public class MainActivity extends BasicActivity {
                     //위치 권한 요청
                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
                 } else {
+                    //myStartActivity(MHtest.class);
                     startLocationService();
                 }
             }
@@ -185,6 +195,22 @@ public class MainActivity extends BasicActivity {
             @Override
             public void onClick(View view) {
                 stopLocationService();
+            }
+        });
+
+        Cbutton = findViewById(R.id.Cbutton);
+        Cbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myStartActivity2(ChildActivity.class);
+            }
+        });
+
+        Pbutton = findViewById(R.id.Pbutton);
+        Pbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myStartActivity2(ParentsActivity.class);
             }
         });
 
@@ -198,30 +224,26 @@ public class MainActivity extends BasicActivity {
                     FirebaseAuth.getInstance().signOut();
                     myStartActivity(LoginActivity.class);
                     break;
-                case R.id.floatingActionButton:
-                    myStartActivity(WritePostActivity.class);
+                case R.id.CheckAuthority:
+                    myStartActivity2(CheckAuthorityActivity.class);
                     break;
-                case R.id.SendSignalButton:
-                    //데이터 보내고 받기
-                    EditText ParentId = (EditText)findViewById(R.id.ParentId);
-                    SendData(ParentId.getText().toString());
+                case R.id.updateButton:
+                    myStartActivity(MemberInitActivity.class);
                     break;
-                case R.id.SendtoParent:
-                    //데이터 보내고 받기
-                    SendData("be8dflcIjBg0e88Jg7JtkPd1z693");
+                case R.id.buttonTest:
+                    myStartActivity(MHtest.class);
                     break;
             }
         }
     };
-
-
-
 
     private void startLocationService() {
         Intent startIntent = new Intent(getApplicationContext(), LocationService.class);
         startIntent.setAction(Action.START_LOCATION_SERVICE);
         startService(startIntent);
         Toast.makeText(this, "위치 업데이트 실행", Toast.LENGTH_SHORT).show();
+        //MapsButtonsLayout = findViewById(R.id.MapsButtonsLayout);
+        //MapsButtonsLayout.setVisibility(View.VISIBLE);
     }
 
     private void stopLocationService() {
@@ -251,13 +273,18 @@ public class MainActivity extends BasicActivity {
                     Toast.makeText(this, "Permission  denied", Toast.LENGTH_SHORT).show();
                 }
         }
-        Toast.makeText(this, "asdafdgfdfsdsfdf", Toast.LENGTH_LONG).show();
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
 
     private void myStartActivity(Class c) {
         Intent intent = new Intent(this, c);
+        startActivity(intent);
+    }
+
+    private void myStartActivity2(Class c) {
+        Intent intent = new Intent(this, c);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 
@@ -283,14 +310,14 @@ public class MainActivity extends BasicActivity {
     public void writeNewUser(String userId, String name, String email, String message) {
         User user = new User(name, email, message, new Date());
 
-        mDatabase.child("users").child(userId).child(name).child(user.getDate().toString()).setValue(message);
+        mDatabase.child("Users").child(userId).child(name).child(user.getDate().toString()).setValue(message);
     }
 
     private void SendData(String ParrentId){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference docRefParrent = db.collection("users").document(ParrentId);
-        DocumentReference docRefChild = db.collection("users").document(user.getUid());
+        DocumentReference docRefParrent = db.collection("Users").document(ParrentId);
+        DocumentReference docRefChild = db.collection("Users").document(user.getUid());
 
         docRefChild.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -339,7 +366,7 @@ public class MainActivity extends BasicActivity {
         //FirebaseDatabase database = FirebaseDatabase.getInstance();
         //DatabaseReference myRef = database.getReference("message");
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.child("users").child(userId).child(name).addValueEventListener(new ValueEventListener() {
+        mDatabase.child("Users").child(userId).child(name).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
@@ -356,5 +383,7 @@ public class MainActivity extends BasicActivity {
             }
         });
     }
+
+
 
 }

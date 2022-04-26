@@ -39,19 +39,19 @@ public class LoginActivity extends BasicActivity {
     GoogleSignInClient mGoogleSignInClient;
     private final int RC_SIGN_IN = 123;
     private RelativeLayout loaderLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
-
-        // 이미 로그인 되어있는지 확인
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        // 이미 로그인 되어있는지 확인
         if (user == null) {
             // 로그인 되어있지 않다면 그대로 로그인 화면이 나타남
         } else {// 로그인 되어있다면 회원정보 DB를 가져옴
             FirebaseFirestore db = FirebaseFirestore.getInstance();
-            DocumentReference docRef = db.collection("users").document(user.getUid());
+            DocumentReference docRef = db.collection("Users").document(user.getUid());
+
             docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -59,8 +59,13 @@ public class LoginActivity extends BasicActivity {
                         DocumentSnapshot document = task.getResult();
                         if (document != null) {
                             if (document.exists()) {
-                                // 회원정보 DB까지 있다면 메인화면 실행
-                                myStartActivity(MainActivity.class);
+                                // 회원정보 DB까지 있다면
+                                // 이메일 인증을 완료해야만 다음으로 넘어감
+                                if (user.isEmailVerified()){
+                                    myStartActivity(MainActivity.class);
+                                } else {
+                                    Log.d("이메일 인증 확인",user.getEmail() + "이메일 인증이 되어있지않습니다.");
+                                }
                             } else {
                                 // 회원정보 DB가 없다면 회원정보입력화면 실행
                                 myStartActivity(MemberInitActivity.class);
@@ -72,6 +77,7 @@ public class LoginActivity extends BasicActivity {
                 }
             });
         }
+
 
         // 구글 회원가입을 위한 코드
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -87,6 +93,7 @@ public class LoginActivity extends BasicActivity {
         // 버튼 리스너
         findViewById(R.id.gotoSignupButton).setOnClickListener(onClickListener);
         findViewById(R.id.LoginButton).setOnClickListener(onClickListener);
+        findViewById(R.id.searchIdBtn).setOnClickListener(onClickListener);
         findViewById(R.id.gotoPasswordResetButton).setOnClickListener(onClickListener);
         findViewById(R.id.Google_sign_in_button).setOnClickListener(onClickListener);
     }
@@ -106,6 +113,9 @@ public class LoginActivity extends BasicActivity {
                     break;
                 case R.id.Google_sign_in_button:
                     signIn();
+                    break;
+                case R.id.searchIdBtn:
+                    myStartActivity(SearchIDActivity.class);
                     break;
             }
         }
@@ -136,17 +146,18 @@ public class LoginActivity extends BasicActivity {
                                 // 로그인 성공시 메인 액티비티 실행
                                 loaderLayout.setVisibility(View.GONE);
                                 FirebaseUser user = mAuth.getCurrentUser();
-                                if(user.isEmailVerified()){
+                                if (user.isEmailVerified()) {
                                     startToast("로그인에 성공하였습니다.");
                                     finish();
                                     myStartActivity(MainActivity.class);
-                                } else{
+                                } else {
                                     startToast("이메일 인증 실패");
                                 }
 
                             } else {
                                 if (task.getException() != null) {
-                                    startToast(task.getException().toString());
+                                    loaderLayout.setVisibility(View.GONE);
+                                    startToast("이메일이 존재하지 않습니다.");
                                 }
                             }
                         }

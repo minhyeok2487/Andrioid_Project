@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/AuthorityEmailText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="접속한 이메일 : "
+        android:textSize="20dp" />
+
+    <EditText
+        android:id="@+id/AuthorityParentId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="권한 요청 보낼 이메일 입력"
+        android:inputType="textEmailAddress" />
+
+    <Button
+        android:id="@+id/AuthoritySendButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="권한 요청보내기" />
+
+
+</LinearLayout>

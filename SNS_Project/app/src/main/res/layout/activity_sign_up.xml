@@ -8,6 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
         android:orientation="vertical">
 
         <TextView
@@ -15,14 +16,17 @@
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:gravity="center"
-            android:text="임시 회원가입 화면"
+            android:text="회원 가입"
             android:textColor="#000000"
-            android:textSize="20dp"
+            android:textSize="40dp"
             android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginRight="10dp"
             android:orientation="vertical"
             android:padding="10dp">
 
@@ -32,7 +36,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="5dp"
                 android:ems="10"
-                android:hint="이메일"
+                android:hint="이메일 (ex. test@test.com)"
                 android:inputType="textEmailAddress"
                 android:minHeight="48dp" />
 
@@ -42,7 +46,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="5dp"
                 android:ems="10"
-                android:hint="비밀번호"
+                android:hint="비밀번호 (6자리 이상 숫자, 문자)"
                 android:inputType="textPassword"
                 android:minHeight="48dp" />
 
@@ -52,14 +56,16 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="5dp"
                 android:ems="10"
-                android:hint="비밀번호 확인"
+                android:hint="비밀번호 확인 (6자리 이상 숫자, 문자)"
                 android:inputType="textPassword"
                 android:minHeight="48dp" />
 
             <Button
                 android:id="@+id/signUpButton"
-                android:layout_width="match_parent"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="30dp"
                 android:text="다음" />
 
         </LinearLayout>

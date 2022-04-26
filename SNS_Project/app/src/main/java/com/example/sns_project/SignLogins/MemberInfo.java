@@ -1,27 +1,44 @@
 package com.example.sns_project.SignLogins;
 
 public class MemberInfo {
+    private String UidCode;
+    private String email;
     private String name;
     private String phoneNumber;
     private String birthDay;
     private String address;
     private String photoUrl;
 
-    public MemberInfo(String name, String phoneNumber, String birthDay, String address, String photoUrl){
+    public MemberInfo(String UidCode, String email, String name, String phoneNumber, String birthDay, String address, String photoUrl){
+        this.UidCode = UidCode;
+        this.email = email;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.birthDay = birthDay;
         this.address = address;
         this.photoUrl = photoUrl;
     }
-    public MemberInfo(String name, String phoneNumber, String birthDay, String address){
+    public MemberInfo(String UidCode, String email, String name, String phoneNumber, String birthDay, String address){
+        this.UidCode = UidCode;
+        this.email = email;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.birthDay = birthDay;
         this.address = address;
     }
 
-
+    public String getUidCode(){
+        return this.UidCode;
+    }
+    public void setUidCode(String UidCode){
+        this.UidCode = UidCode;
+    }
+    public String getEmail(){
+        return this.email;
+    }
+    public void setEmail(String email){
+        this.email = email;
+    }
     public String getName(){
         return this.name;
     }

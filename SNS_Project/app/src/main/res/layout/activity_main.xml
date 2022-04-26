@@ -35,69 +35,94 @@
         android:layout_height="wrap_content"
         android:text="접속한 전화번호 : " />
 
-    <EditText
-        android:id="@+id/ParentId"
+    <Button
+        android:id="@+id/CheckAuthority"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="아이디입력"
-        android:inputType="textPersonName" />
+        android:text="권한 부여" />
 
     <Button
-        android:id="@+id/SendSignalButton"
+        android:id="@+id/updateButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="SendSignal" />
-
-    <Button
-        android:id="@+id/SendtoParent"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="부모에게 정보보내기" />
+        android:text="개인정보 수정" />
 
     <LinearLayout
-        android:id="@+id/ButtonLayout"
+        android:id="@+id/StartStopButtonsLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        android:visibility="gone">
 
         <Button
             android:id="@+id/Startbutton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="start" />
+            android:text="위치전송 START" />
 
         <Button
             android:id="@+id/Stopbutton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="stop" />
-
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:text="위치전송 STOP" />
 
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/MapsButtonsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/Cbutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="내 위치" />
+
+        <Button
+            android:id="@+id/Pbutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="상대방 위치" />
+
+    </LinearLayout>
+
 
     <TextView
         android:id="@+id/childTextview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="보일거임" />
+        android:hint="실시간 데이터베이스 확인"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/buttonTestLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/buttonTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="상대방 위치 보기" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/logoutButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="로그아웃" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/floatingActionButton"
-        android:layout_width="80dp"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        app:srcCompat="@drawable/ic_baseline_add_box_24" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 
 </LinearLayout>
